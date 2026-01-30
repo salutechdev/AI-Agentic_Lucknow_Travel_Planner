@@ -1,0 +1,34 @@
+services:
+  # Backend Service (FastAPI)
+  - type: web
+    name: lucknow-guide-backend # Unique name for the backend service
+    env: python
+    plan: free # Use Render's free tier
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile # Path relative to repo root
+    dockerContext: ./backend # Build context directory
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11 # Match the Python version in your Dockerfile
+      # THIS IS THE CORRECT, PERMANENT LINK:
+      - fromGroup: lucknow-guide-secrets # This links the group you created in the UI
+    # Optional: Health check path for FastAPI
+    healthCheckPath: /docs
+    autoDeploy: no # Redeploy automatically on pushes to the main branch
+
+  # Frontend Service (Streamlit)
+  - type: web
+    name: lucknow-guide-frontend # Unique name for the frontend service
+    env: python
+    plan: free
+    runtime: docker
+    dockerfilePath: ./frontend/Dockerfile # Path relative to repo root
+    dockerContext: ./frontend
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11
+      # CRUCIAL: Tell the frontend the internal URL of the backend service on Render
+      - key: BACKEND_URL
+        # Render automatically resolves 'lucknow-guide-backend' to the internal service address
+        value: https://lucknow-guide-backend.onrender.com/query
+    autoDeploy: yes
